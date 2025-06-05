@@ -1,0 +1,97 @@
+.header {
+    width: calc(100% - 96px);
+    max-width: 100vw;
+}
+
+.header__logo {
+    width: 228px;
+    height: 50px;
+    background-color: transparent;
+    border-radius: 20px;
+}
+
+.scale {
+    position: fixed;
+    top: 29px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 180px;
+    height: 60px;
+    flex-direction: row;
+
+    background-color: #ffffff;
+    border-radius: 20px;
+}
+
+.scale__down, .scale__up {
+    cursor: pointer;
+    display: flex;
+    width: 44px;
+    height: 44px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+    background-size: 28px 28px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.scale__down {
+    background-image: url("../../../assets/tools/scale_canvas_minus.svg");
+}
+
+.scale__up {
+    background-image: url("../../../assets/tools/scale_canvas_plus.svg");
+}
+
+.scale__down:hover, .scale__up:hover {
+    background-color: rgba(56, 136, 255, 0.2);
+}
+
+.scale__text {
+    display: flex;
+    width: 70px;
+    height: 50px;
+    justify-content: center;
+    align-items: center;
+}
+
+.control {
+    position: fixed;
+    top: 29px;
+    right: 44px;
+    display: flex;
+    flex-direction: row;
+    column-gap: 35px;
+}
+
+.control__link, .control__user {
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-size: 28px 28px;
+    background-position: center;
+}
+
+.control__user {
+    width: 50px;
+    height: 50px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    background-image: url("../../../assets/tools/account_icon.svg");
+}
+
+.control__link {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    background-color: #ffffff;
+    background-image: url("../../../assets/tools/share_icon.svg");
+}
+
+.text_light {
+    font-weight: 400;
+}

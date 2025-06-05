@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  digboard-server-service:
+    container_name: digboard-server
+    build: server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server/app:/app
+      - node_modules_server:/app/node_modules/
+    depends_on:
+      - digboard-mongo
+    networks:
+      - server-net
+      - client-net
+
+  digboard-client-service:
+    container_name: digboard-client
+    build: client
+    ports:
+      - "3001:3001"
+    env_file:
+      - compose-variables.env
+    volumes:
+      - ./client/app:/app
+      - node_modules:/app/node_modules/
+    depends_on:
+      - digboard-server-service
+    networks:
+      - server-net
+      - client-net
+
+  digboard-mongo:
+    restart: always
+    image: mongo:7.0.7
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - 27017:27017
+    env_file:
+      - compose-variables.env
+    command: mongod --quiet
+    networks:
+      - server-net
+
+volumes:
+  mongo_data:
+  node_modules:
+  node_modules_server:
+
+
+networks:
+  client-net:
+  server-net:

@@ -1,0 +1,130 @@
+@keyframes hide-tools {
+    from {
+        left: 0;
+    }
+    to {
+        left: -96px;
+    }
+}
+
+@keyframes show-tools {
+    from {
+        left: -96px;
+    }
+    to {
+        left: 0;
+    }
+}
+
+.tools-container {
+    position: fixed;
+    top: 29px;
+    left: 44px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 12px;
+}
+
+.toggle-tools {
+    width: 52px;
+    height: 52px;
+    background-color: white;
+    border-radius: 100%;
+
+    cursor: pointer;
+    background-image: url("../../../assets/tools/hide_tools_icon.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 28px 28px;
+}
+
+.tools-hidden {
+    animation-name: hide-tools;
+    animation-duration: 0.2s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.tools-show {
+    animation-name: show-tools;
+    animation-duration: 0.2s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.tools {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 4px;
+    padding: 10px;
+    /* height: 370px; */
+
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+
+.tool {
+    width: 40px;
+    height: 40px;
+
+    background-size: 40px;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    cursor: pointer;
+}
+
+.tool:hover {
+    background-color: rgba(56, 136, 255, 0.2) !important;
+    border-radius: 5px;
+}
+
+.tools__select {
+    background-image: url("../../../assets/tools/select_tool.svg");
+    background-size: 28px 28px;
+}
+
+.tools__move {
+    background-image: url("../../../assets/tools/drag_pan_48dp_000000_FILL0_wght400_GRAD0_opsz48.png");
+}
+
+.tools__scale {
+    background-image: url("../../../assets/tools/pan_zoom_48dp_000000_FILL0_wght400_GRAD0_opsz48.png");
+}
+
+.tools__pen {
+    background-image: url("../../../assets/tools/pen_tool.svg");
+    background-size: 28px 28px;
+}
+
+.tools__arrow {
+    background-image: url("../../../assets/tools/arrow_tool.svg");
+    background-size: 28px 28px;
+}
+
+.tools__rect {
+    background-image: url("../../../assets/tools/rectangle_tool.svg");
+    background-size: 28px 28px;
+}
+
+.tools__text {
+    background-image: url("../../../assets/tools/text_tool.svg");
+}
+
+.tools__ellipse {
+    background-image: url("../../../assets/tools/ellipse_tool.svg");
+    background-size: 28px 28px;
+}
+
+.tools__delete {
+    background-image: url("../../../assets/tools/delete_tool.svg");
+    background-size: 32px 32px;
+}
+
+
+

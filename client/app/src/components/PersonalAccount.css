@@ -1,0 +1,189 @@
+.account-header {
+    position: absolute;
+    top: 22px;
+    left: 32px;
+    width: calc(100vw - 2 * 0.1vw);
+    max-width: 350px;
+
+    cursor: pointer;
+}
+
+.text-no-margin {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.account-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -60%);
+
+    width: fit-content;
+    height: 55vh;
+    display: flex;
+    flex-direction: column;
+    
+    justify-content: flex-start;
+    align-items: flex-start;
+
+    margin-top: 70px;
+    margin-bottom: 22px;
+    padding: 68px;
+    background: #FFFFFF;
+
+    border-radius: 10px;
+}
+
+.account-container_header {
+    width: 100%;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.form_create-board {
+    display: flex;
+    gap: 16px;
+}
+
+.form_input-name {
+    width: 15vw;
+    margin-left: 40px;
+    margin-right: 10px;
+
+    border: none;
+    outline: none;
+    border-radius: 0;
+    border-bottom: 1px solid #000000;
+
+    font-family: "Unbounded", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+
+    padding: 10px;
+}
+
+.form-create_btn {
+    width: 10vw;
+
+    border-radius: 20px;
+    padding: 0.9em 2.3em;
+    background-color: rgba(56, 136, 255, 1);
+
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 1em;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #ffffff;
+}
+
+.account-board-card-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    column-gap: calc((100% - 3 * 170px) / 2);
+    row-gap: 32px;
+
+    height: 64vh;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.account-card-img {
+    width: 150px;
+    height: 150px;
+    border: 1px solid #000000;
+    border-radius: 10px;
+    
+    cursor: pointer;
+}
+
+.account-card-name {
+    font-size: 16px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.account-card-date {
+    margin: 0;
+}
+
+@media (max-width: 1450px) {
+    .account-board-card-container {
+        column-gap: calc((100% - 3 * 170px) / 2);
+        column-gap: 56px;
+        row-gap: 32px;
+    }
+
+    .account-card-img {
+        width: 140px;
+        height: 140px;
+    }
+
+    .form_input-name {
+        margin-left: 40px;
+        margin-right: 10px;
+        width: 15vw;
+    }
+}
+
+@media (max-width: 1100px) {
+    .account-container {
+        padding: 2em;
+    }
+
+    .form-create_btn {
+        padding: 0.5em 1.2em;
+        font-size: 0.6em;
+    }
+
+    .form_input-name {
+        margin-left: 30px;
+        margin-right: 10px;
+        width: 15vw;
+        font-size: 0.6em;
+        padding: 0.5em;
+    }
+}
+
+@media (max-width: 850px) {
+    .account-container {
+        width: 70vw;
+    }
+
+    .form-create_btn {
+        width: 15vw;
+    }
+
+    .form_input-name {
+        width: 18vw;
+    }
+}
+
+@media (max-width: 700px) {
+    .account-header {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 650px) {
+    .account-container {
+        width: 85vw;
+    }
+
+    .form-create_btn {
+        width: 15vw;
+    }
+
+    .form_input-name {
+        width: 25vw;
+    }
+}
