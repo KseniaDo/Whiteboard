@@ -7,7 +7,7 @@ import ToolsPanel from './common/toolsPanel/ToolsPanel';
 import Tool from './common/tools/tool';
 
 import '../styles/BoardPage.css';
-import OuterContainer from './common/tools/outerContainer';
+import SelectionContainer from './common/tools/selectionContainer';
 import { useParams } from 'react-router-dom';
 
 // подключение socket к компоненту
@@ -94,7 +94,7 @@ function BoardPage() {
         y: 0
     });
 
-    const [outerContainer, setOuterContainer] = useState(new OuterContainer());
+    const [outerContainer, setOuterContainer] = useState(new SelectionContainer());
 
     useEffect(() => {
         function onConnect() {
@@ -548,7 +548,7 @@ function BoardPage() {
         resizeCanvas();
 
         function updateStageChild (currentGraphics, deleteMode = false) {
-            if (currentGraphics instanceof OuterContainer) {
+            if (currentGraphics instanceof SelectionContainer) {
                 cameraContainer.removeChild(currentGraphics.container);
                 cameraContainer.addChild(currentGraphics.container);
             } else {
