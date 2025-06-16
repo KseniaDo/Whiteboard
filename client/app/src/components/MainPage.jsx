@@ -154,11 +154,15 @@ function MainPage() {
           <div className='section-card-container'>
             <div className='section-card'>
               <h4 className='text-medium'>GitHub проекта</h4>
-              <div className='section-img-container'></div>
+              <a className='section-link-container' href='https://github.com/KseniaDo/Whiteboard' target='_blank' rel='noopener noreferrer'>
+                <img src='/src/assets/logo/favicon_logo.svg' alt='Репозиторий проекта' width={100} height={100}/>
+              </a>
             </div>
             <div className='section-card'>
               <h4 className='text-medium'>GitHub автора</h4>
-              <div className='section-img-container'></div>
+              <a className='section-link-container' href='https://github.com/KseniaDo' target='_blank' rel='noopener noreferrer'>
+                <img src='/src/assets/tools/account_icon.svg' alt='Репозиторий проекта' width={100} height={100}/>
+              </a>
             </div>
           </div>
         </div>

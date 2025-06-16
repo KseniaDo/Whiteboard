@@ -32,7 +32,7 @@ function PersonalAccount() {
             const data = await response.json();
             setBoards(data);
         } catch(error) {
-            console.log("Ошибка при получении данных");
+            console.log("Error: getting the data");
         }
     };
 
@@ -57,7 +57,7 @@ function PersonalAccount() {
             getAllBoards();
             setNewBoardName('');
         } catch(error) {
-            console.log("Ошибка при создании доски");
+            console.log("Error: creating the desk");
         }
     };
 

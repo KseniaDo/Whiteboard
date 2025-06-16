@@ -127,6 +127,11 @@
     width: 450px;
     height: 300px;
     background-color: #dedede;
+    border-radius: 1em;
+}
+
+.section-link-container {
+    display: block;
 }
 
 .section-card-container {
@@ -140,6 +145,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 1em;
 }
 
 @media (max-width: 1580px) {

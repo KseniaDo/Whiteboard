@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
 
         const JWTtoken = jwt.sign(
             { userId: newUser._id, role: newUser.role },
-            "secret",
+            process.env.SECRET_KEY,
             { expiresIn: '10h' }
         );
 
@@ -52,7 +52,7 @@ exports.login = async (req, res, next) => {
 
         const JWTtoken = jwt.sign(
             { userId: user._id, role: user.role },
-            "secret",
+            process.env.SECRET_KEY,
             { expiresIn: '1h'}
         );
 

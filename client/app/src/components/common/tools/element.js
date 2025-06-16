@@ -2,27 +2,27 @@ import { Container, Graphics, Rectangle, BitmapText } from 'pixi.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export default class Element {
-    LeftCornerX = null;
-    LeftCornerY = null;
-    RightCornerX = null;
-    RightCornerY = null;
+    leftUpCornerX = null;
+    leftUpCornerY = null;
+    rightDownCornerX = null;
+    rightDownCornerY = null;
     owner = null;
-    type = null;
+    elementType = null;
     elementGraphics = null;
     selectedColor = 0x0000FF;
     selectedTextColor = 0x0000FF;
     selectedElement = false;
 
-    offsetPenX = 0;
-    offsetPenY = 0;
+    initialOffsetX = 0;
+    initialOffsetY = 0;
 
-    textString = '';
+    elementTextString = '';
     ownerTextGraphics = null;
-    innerTextGraphics = null;
+    elementTextGraphics = null;
     allowText = false;
     textMargin = 12;
 
-    pointsPenArray = [];
+    pointsArray = [];
     scalePenX = 1;
     scalePenY = 1;
 
@@ -34,46 +34,46 @@ export default class Element {
     constructor (typeTool, color) {
         switch(typeTool) {
             case 'penTool':
-                this.type = 'pen';
+                this.elementType = 'pen';
                 this.selectedColor = color;
                 break;
             case 'rectTool':
-                this.type = 'rect';
+                this.elementType = 'rect';
                 this.selectedColor = color;
                 break;
             case 'ellipseTool':
-                this.type = 'ellipse';
+                this.elementType = 'ellipse';
                 this.selectedColor = color;
                 break;
             case 'textTool':
-                this.type = 'text';
+                this.elementType = 'text';
                 this.selectedTextColor = color;
                 break;
             case 'arrowTool':
-                this.type = 'arrow';
+                this.elementType = 'arrow';
                 this.selectedColor = color;
                 break;
             default:
-                this.type = null;
+                this.elementType = null;
                 break;
         }
         this.elementId = uuidv4();
         this.elementGraphics = new Graphics();
-        this.innerTextGraphics = new BitmapText({
-            text: this.textString,
+        this.elementTextGraphics = new BitmapText({
+            text: this.elementTextString,
             style: {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 fill: this.selectedTextColor,
                 wordWrap: true,
-                wordWrapWidth: this.RightCornerX - this.LeftCornerX - this.textMargin,
+                wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX - this.textMargin,
                 align: 'left',
             }
         })
     }
 
     redrawGraphics() {
-        switch(this.type) {
+        switch(this.elementType) {
             case 'pen':
                 this.redrawPen();
                 break;
@@ -96,7 +96,7 @@ export default class Element {
     }
 
     redrawBusyGraphics() {
-        switch(this.type) {
+        switch(this.elementType) {
             case 'pen':
                 this.redrawBusyPen();
                 break;
@@ -126,28 +126,28 @@ export default class Element {
                 fontSize: 24,
                 fill: 0xFF0000,
                 wordWrap: true,
-                wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                 align: 'left',
             }
         });
-        this.ownerTextGraphics.position.x = this.LeftCornerX;
-        this.ownerTextGraphics.position.y = this.LeftCornerY - 25;
+        this.ownerTextGraphics.position.x = this.leftUpCornerX;
+        this.ownerTextGraphics.position.y = this.leftUpCornerY - 25;
     }
 
-    setPositionAsSelected(outerContainerLCX, outerContainerLCY) {
-        if (this.type == 'rect' || this.type == 'ellipse' || this.type == 'text') {
-            this.elementGraphics.position.x = this.LeftCornerX - outerContainerLCX;
-            this.elementGraphics.position.y = this.LeftCornerY - outerContainerLCY;
+    setPositionSelectedElement(outerContainerLCX, outerContainerLCY) {
+        if (this.elementType == 'rect' || this.elementType == 'ellipse' || this.elementType == 'text') {
+            this.elementGraphics.position.x = this.leftUpCornerX - outerContainerLCX;
+            this.elementGraphics.position.y = this.leftUpCornerY - outerContainerLCY;
         } else {
             if (this.scalePenX < 0) {
-                this.elementGraphics.position.x = this.RightCornerX - outerContainerLCX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.rightDownCornerX - outerContainerLCX - this.initialOffsetX * this.scalePenX;
             } else {
-                this.elementGraphics.position.x = this.LeftCornerX - outerContainerLCX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.leftUpCornerX - outerContainerLCX - this.initialOffsetX * this.scalePenX;
             }
             if (this.scalePenY < 0) {
-                this.elementGraphics.position.y = this.RightCornerY - outerContainerLCY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.rightDownCornerY - outerContainerLCY - this.initialOffsetY * this.scalePenY;
             } else {
-                this.elementGraphics.position.y = this.LeftCornerY - outerContainerLCY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.leftUpCornerY - outerContainerLCY - this.initialOffsetY * this.scalePenY;
             }
         }
     }
@@ -165,10 +165,10 @@ export default class Element {
     }
 
     setHitArea(localPoint) {
-        if (this.type == 'arrow' || this.type == 'pen') {
-            this.elementGraphics.hitArea = new Rectangle(localPoint.x, localPoint.y, this.RightCornerX - this.LeftCornerX, this.RightCornerY - this.LeftCornerY);
+        if (this.elementType == 'arrow' || this.elementType == 'pen') {
+            this.elementGraphics.hitArea = new Rectangle(localPoint.x, localPoint.y, this.rightDownCornerX - this.leftUpCornerX, this.rightDownCornerY - this.leftUpCornerY);
         } else {
-            this.elementGraphics.hitArea = new Rectangle(0, 0, this.RightCornerX - this.LeftCornerX, this.RightCornerY - this.LeftCornerY);
+            this.elementGraphics.hitArea = new Rectangle(0, 0, this.rightDownCornerX - this.leftUpCornerX, this.rightDownCornerY - this.leftUpCornerY);
         }
     }
 
@@ -176,23 +176,23 @@ export default class Element {
         this.selectedElement = selectMode;
     }
 
-    setPosition() {
-        this.elementGraphics.position.x = this.LeftCornerX;
-        this.elementGraphics.position.y = this.LeftCornerY;
+    setPositionGraphics() {
+        this.elementGraphics.position.x = this.leftUpCornerX;
+        this.elementGraphics.position.y = this.leftUpCornerY;
     }
 
-    setPositionInnerText(outerContainerLCX = null, outerContainerLCY = null) {
+    setPositionTextGraphics(outerContainerLCX = null, outerContainerLCY = null) {
         if (outerContainerLCX && outerContainerLCY) {
-            this.innerTextGraphics.position.x = this.LeftCornerX - outerContainerLCX + this.textMargin;
-            this.innerTextGraphics.position.y = this.LeftCornerY - outerContainerLCY + this.textMargin;
+            this.elementTextGraphics.position.x = this.leftUpCornerX - outerContainerLCX + this.textMargin;
+            this.elementTextGraphics.position.y = this.leftUpCornerY - outerContainerLCY + this.textMargin;
         } else {
-            this.innerTextGraphics.position.x = this.LeftCornerX + this.textMargin;
-            this.innerTextGraphics.position.y = this.LeftCornerY + this.textMargin;
+            this.elementTextGraphics.position.x = this.leftUpCornerX + this.textMargin;
+            this.elementTextGraphics.position.y = this.leftUpCornerY + this.textMargin;
         }
     }
 
     setFill() {
-        if (this.type !== 'text') {
+        if (this.elementType !== 'text') {
             if (this.selectedColor !== null) {
                 this.elementGraphics.fill({color: this.selectedColor})
             }
@@ -201,20 +201,20 @@ export default class Element {
 
     setLine() {
         this.elementGraphics.setStrokeStyle({ color: this.selectedColor, width: 2, cap: "round", join: "round"});
-        this.elementGraphics.moveTo(this.pointsPenArray[0].x * this.scalePenX, this.pointsPenArray[0].y * this.scalePenY);
-        for (let i = 1; i < this.pointsPenArray.length; i++) {
-            this.elementGraphics.lineTo(this.pointsPenArray[i].x * this.scalePenX, this.pointsPenArray[i].y * this.scalePenY);
-            this.elementGraphics.moveTo(this.pointsPenArray[i].x * this.scalePenX, this.pointsPenArray[i].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[0].x * this.scalePenX, this.pointsArray[0].y * this.scalePenY);
+        for (let i = 1; i < this.pointsArray.length; i++) {
+            this.elementGraphics.lineTo(this.pointsArray[i].x * this.scalePenX, this.pointsArray[i].y * this.scalePenY);
+            this.elementGraphics.moveTo(this.pointsArray[i].x * this.scalePenX, this.pointsArray[i].y * this.scalePenY);
         }
         this.elementGraphics.stroke();
     }
 
     setBusyLine() {
         this.elementGraphics.setStrokeStyle({ color: 0xFF0000, width: 2, cap: "round", join: "round", alpha: 1});
-        this.elementGraphics.moveTo(this.pointsPenArray[0].x * this.scalePenX, this.pointsPenArray[0].y * this.scalePenY);
-        for (let i = 1; i < this.pointsPenArray.length; i++) {
-            this.elementGraphics.lineTo(this.pointsPenArray[i].x * this.scalePenX, this.pointsPenArray[i].y * this.scalePenY);
-            this.elementGraphics.moveTo(this.pointsPenArray[i].x * this.scalePenX, this.pointsPenArray[i].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[0].x * this.scalePenX, this.pointsArray[0].y * this.scalePenY);
+        for (let i = 1; i < this.pointsArray.length; i++) {
+            this.elementGraphics.lineTo(this.pointsArray[i].x * this.scalePenX, this.pointsArray[i].y * this.scalePenY);
+            this.elementGraphics.moveTo(this.pointsArray[i].x * this.scalePenX, this.pointsArray[i].y * this.scalePenY);
         }
         this.elementGraphics.stroke();
     }
@@ -229,23 +229,23 @@ export default class Element {
         }
 
         if (this.selectedElement) {
-            if (this.offsetPenX == this.LeftCornerX || this.offsetPenY == this.LeftCornerY) {
-                this.elementGraphics.position.x = - this.offsetPenX / this.scalePenX;
-                this.elementGraphics.position.y = - this.offsetPenY / this.scalePenY;
+            if (this.initialOffsetX == this.leftUpCornerX || this.initialOffsetY == this.leftUpCornerY) {
+                this.elementGraphics.position.x = - this.initialOffsetX / this.scalePenX;
+                this.elementGraphics.position.y = - this.initialOffsetY / this.scalePenY;
             } else {
-                this.elementGraphics.position.x = - this.offsetPenX / this.scalePenX;
-                this.elementGraphics.position.y = - this.offsetPenY / this.scalePenY;
+                this.elementGraphics.position.x = - this.initialOffsetX / this.scalePenX;
+                this.elementGraphics.position.y = - this.initialOffsetY / this.scalePenY;
             }
         } else {
             if (this.scalePenX < 0) {
-                this.elementGraphics.position.x = this.RightCornerX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.rightDownCornerX - this.initialOffsetX * this.scalePenX;
             } else {
-                this.elementGraphics.position.x = this.LeftCornerX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.leftUpCornerX - this.initialOffsetX * this.scalePenX;
             }
             if (this.scalePenY < 0) {
-                this.elementGraphics.position.y = this.RightCornerY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.rightDownCornerY - this.initialOffsetY * this.scalePenY;
             } else {
-                this.elementGraphics.position.y = this.LeftCornerY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.leftUpCornerY - this.initialOffsetY * this.scalePenY;
             }
         }
     }
@@ -260,36 +260,36 @@ export default class Element {
         }
 
         if (this.scalePenX < 0) {
-            this.elementGraphics.position.x = this.RightCornerX - this.offsetPenX * this.scalePenX;
+            this.elementGraphics.position.x = this.rightDownCornerX - this.initialOffsetX * this.scalePenX;
         } else {
-            this.elementGraphics.position.x = this.LeftCornerX - this.offsetPenX * this.scalePenX;
+            this.elementGraphics.position.x = this.leftUpCornerX - this.initialOffsetX * this.scalePenX;
         }
         if (this.scalePenY < 0) {
-            this.elementGraphics.position.y = this.RightCornerY - this.offsetPenY * this.scalePenY;
+            this.elementGraphics.position.y = this.rightDownCornerY - this.initialOffsetY * this.scalePenY;
         } else {
-            this.elementGraphics.position.y = this.LeftCornerY - this.offsetPenY * this.scalePenY;
+            this.elementGraphics.position.y = this.leftUpCornerY - this.initialOffsetY * this.scalePenY;
         }
     }
 
     setArrow() {
         this.elementGraphics.setStrokeStyle({ color: this.selectedColor, width: 2, cap: "round", join: "round"});
-        this.elementGraphics.moveTo(this.pointsPenArray[0].x * this.scalePenX, this.pointsPenArray[0].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.moveTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[2].x * this.scalePenX, this.pointsPenArray[2].y * this.scalePenY);
-        this.elementGraphics.moveTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[3].x * this.scalePenX, this.pointsPenArray[3].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[0].x * this.scalePenX, this.pointsArray[0].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[2].x * this.scalePenX, this.pointsArray[2].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[3].x * this.scalePenX, this.pointsArray[3].y * this.scalePenY);
         this.elementGraphics.stroke();
     }
 
     setBusyArrow() {
         this.elementGraphics.setStrokeStyle({ color: 0xFF0000, width: 2, cap: "round", join: "round", alpha: 1});
-        this.elementGraphics.moveTo(this.pointsPenArray[0].x * this.scalePenX, this.pointsPenArray[0].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.moveTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[2].x * this.scalePenX, this.pointsPenArray[2].y * this.scalePenY);
-        this.elementGraphics.moveTo(this.pointsPenArray[1].x * this.scalePenX, this.pointsPenArray[1].y * this.scalePenY);
-        this.elementGraphics.lineTo(this.pointsPenArray[3].x * this.scalePenX, this.pointsPenArray[3].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[0].x * this.scalePenX, this.pointsArray[0].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[2].x * this.scalePenX, this.pointsArray[2].y * this.scalePenY);
+        this.elementGraphics.moveTo(this.pointsArray[1].x * this.scalePenX, this.pointsArray[1].y * this.scalePenY);
+        this.elementGraphics.lineTo(this.pointsArray[3].x * this.scalePenX, this.pointsArray[3].y * this.scalePenY);
         this.elementGraphics.stroke();
     }
 
@@ -303,23 +303,23 @@ export default class Element {
         }
 
         if (this.selectedElement) {
-            if (this.offsetPenX == this.LeftCornerX || this.offsetPenY == this.LeftCornerY) {
-                this.elementGraphics.position.x = - this.offsetPenX / this.scalePenX;
-                this.elementGraphics.position.y = - this.offsetPenY / this.scalePenY;
+            if (this.initialOffsetX == this.leftUpCornerX || this.initialOffsetY == this.leftUpCornerY) {
+                this.elementGraphics.position.x = - this.initialOffsetX / this.scalePenX;
+                this.elementGraphics.position.y = - this.initialOffsetY / this.scalePenY;
             } else {
-                this.elementGraphics.position.x = - this.offsetPenX / this.scalePenX;
-                this.elementGraphics.position.y = - this.offsetPenY / this.scalePenY;
+                this.elementGraphics.position.x = - this.initialOffsetX / this.scalePenX;
+                this.elementGraphics.position.y = - this.initialOffsetY / this.scalePenY;
             }
         } else {
             if (this.scalePenX < 0) {
-                this.elementGraphics.position.x = this.RightCornerX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.rightDownCornerX - this.initialOffsetX * this.scalePenX;
             } else {
-                this.elementGraphics.position.x = this.LeftCornerX - this.offsetPenX * this.scalePenX;
+                this.elementGraphics.position.x = this.leftUpCornerX - this.initialOffsetX * this.scalePenX;
             }
             if (this.scalePenY < 0) {
-                this.elementGraphics.position.y = this.RightCornerY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.rightDownCornerY - this.initialOffsetY * this.scalePenY;
             } else {
-                this.elementGraphics.position.y = this.LeftCornerY - this.offsetPenY * this.scalePenY;
+                this.elementGraphics.position.y = this.leftUpCornerY - this.initialOffsetY * this.scalePenY;
             }
         }
     }
@@ -334,14 +334,14 @@ export default class Element {
         }
 
         if (this.scalePenX < 0) {
-            this.elementGraphics.position.x = this.RightCornerX - this.offsetPenX * this.scalePenX;
+            this.elementGraphics.position.x = this.rightDownCornerX - this.initialOffsetX * this.scalePenX;
         } else {
-            this.elementGraphics.position.x = this.LeftCornerX - this.offsetPenX * this.scalePenX;
+            this.elementGraphics.position.x = this.leftUpCornerX - this.initialOffsetX * this.scalePenX;
         }
         if (this.scalePenY < 0) {
-            this.elementGraphics.position.y = this.RightCornerY - this.offsetPenY * this.scalePenY;
+            this.elementGraphics.position.y = this.rightDownCornerY - this.initialOffsetY * this.scalePenY;
         } else {
-            this.elementGraphics.position.y = this.LeftCornerY - this.offsetPenY * this.scalePenY;
+            this.elementGraphics.position.y = this.leftUpCornerY - this.initialOffsetY * this.scalePenY;
         }
     }
 
@@ -356,65 +356,66 @@ export default class Element {
             this.elementGraphics.rect(
                 0,
                 0,
-                Math.abs(this.RightCornerX - this.LeftCornerX),
-                Math.abs(this.RightCornerY - this.LeftCornerY)
+                Math.abs(this.rightDownCornerX - this.leftUpCornerX),
+                Math.abs(this.rightDownCornerY - this.leftUpCornerY)
             )
             if (this.allowText) {
-                if (this.type == 'text') {
-                    this.innerTextGraphics.style = {
+                if (this.elementType == 'text') {
+                    this.elementTextGraphics.style = {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: this.selectedTextColor,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                         align: 'left',
                     };
                 } else {
-                    this.innerTextGraphics.style = {
+                    this.elementTextGraphics.text = this.elementTextString;
+                    this.elementTextGraphics.style = {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: this.selectedTextColor,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX - this.textMargin,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX - this.textMargin,
                         align: 'left',
                     };
                 }
-                this.innerTextGraphics.alpha = 1;
+                this.elementTextGraphics.alpha = 1;
             }
-            if (this.type == 'text') {
-                this.elementGraphics.position.x = this.LeftCornerX;
-                this.elementGraphics.position.y = this.LeftCornerY;
+            if (this.elementType == 'text') {
+                this.elementGraphics.position.x = this.leftUpCornerX;
+                this.elementGraphics.position.y = this.leftUpCornerY;
                 this.elementGraphics.setStrokeStyle({ width: 2, color: 0x0095FF });
                 this.elementGraphics.stroke();
             }
         } else {
             if (this.elementGraphics.destroyed) {
                 this.elementGraphics = new BitmapText({
-                    text: this.textString,
+                    text: this.elementTextString,
                     style: {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: this.selectedTextColor,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                         align: 'left',
                     }
                 });
             } else {
                 this.elementGraphics.scale.set(1, 1);
             }
-            this.elementGraphics.text = this.textString;
+            this.elementGraphics.text = this.elementTextString;
             this.elementGraphics.style = {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 fill: this.selectedTextColor,
                 wordWrap: true,
-                wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                 align: 'left',
             };
             this.elementGraphics.alpha = 1;
         }
-        this.setPosition();
+        this.setPositionGraphics();
         this.setFill();
     }
 
@@ -430,78 +431,78 @@ export default class Element {
             this.elementGraphics.rect(
                 0,
                 0,
-                Math.abs(this.RightCornerX - this.LeftCornerX),
-                Math.abs(this.RightCornerY - this.LeftCornerY)
+                Math.abs(this.rightDownCornerX - this.leftUpCornerX),
+                Math.abs(this.rightDownCornerY - this.leftUpCornerY)
             )
             this.elementGraphics.setStrokeStyle({ width: 2, color: 0xFF0000 });
             this.elementGraphics.stroke();
             if (this.allowText) {
-                if (this.type == 'text') {
-                    this.innerTextGraphics.style = {
+                if (this.elementType == 'text') {
+                    this.elementTextGraphics.style = {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: this.selectedTextColor,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                         align: 'left',
                     };
                 } else {
-                    this.innerTextGraphics.style = {
+                    this.elementTextGraphics.style = {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: this.selectedTextColor,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX - this.textMargin,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX - this.textMargin,
                         align: 'left',
                     };
                 }
-                this.innerTextGraphics.alpha = 0.5;
+                this.elementTextGraphics.alpha = 0.5;
             }
-            if (this.type == 'text') {
-                this.elementGraphics.position.x = this.LeftCornerX;
-                this.elementGraphics.position.y = this.LeftCornerY;
+            if (this.elementType == 'text') {
+                this.elementGraphics.position.x = this.leftUpCornerX;
+                this.elementGraphics.position.y = this.leftUpCornerY;
                 this.elementGraphics.setStrokeStyle({ width: 2, color: 0x0095FF });
                 this.elementGraphics.stroke();
             }
         } else {
             if (this.elementGraphics.destroyed) {
                 this.elementGraphics = new BitmapText({
-                    text: this.textString,
+                    text: this.elementTextString,
                     style: {
                         fontFamily: 'Arial',
                         fontSize: 24,
                         fill: 0xFF0000,
                         wordWrap: true,
-                        wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                        wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                         align: 'left',
                     }
                 });
             } else {
                 this.elementGraphics.scale.set(1, 1);
             }
-            this.elementGraphics.text = this.textString;
+            this.elementGraphics.text = this.elementTextString;
             this.elementGraphics.style = {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 fill: 0xFF0000,
                 wordWrap: true,
-                wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                 align: 'left',
             };
         }
-        this.setPosition();
+        this.setPositionGraphics();
     }
 
     redrawText () {
         this.elementGraphics.clear();
         this.elementGraphics = new BitmapText({
-            text: this.textString,
+            text: this.elementTextString,
             style: {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 fill: this.selectedColor,
                 wordWrap: true,
-                wordWrapWidth: this.RightCornerX - this.LeftCornerX,
+                wordWrapWidth: this.rightDownCornerX - this.leftUpCornerX,
                 align: 'left',
             }
         });
@@ -514,14 +515,14 @@ export default class Element {
             this.elementGraphics.clear();
         }
         this.elementGraphics.ellipse(
-            (this.RightCornerX - this.LeftCornerX) / 2,
-            (this.RightCornerY - this.LeftCornerY) / 2,
-            Math.abs(this.RightCornerX - this.LeftCornerX) / 2,
-            Math.abs(this.RightCornerY - this.LeftCornerY) / 2
+            (this.rightDownCornerX - this.leftUpCornerX) / 2,
+            (this.rightDownCornerY - this.leftUpCornerY) / 2,
+            Math.abs(this.rightDownCornerX - this.leftUpCornerX) / 2,
+            Math.abs(this.rightDownCornerY - this.leftUpCornerY) / 2
         )
 
         if (!this.selectedElement) {
-            this.setPosition();
+            this.setPositionGraphics();
         }
 
         this.setFill();
@@ -535,13 +536,13 @@ export default class Element {
         }
         this.elementGraphics.fill({color: this.selectedColor, alpha: 0.5});
         this.elementGraphics.ellipse(
-            (this.RightCornerX - this.LeftCornerX) / 2,
-            (this.RightCornerY - this.LeftCornerY) / 2,
-            Math.abs(this.RightCornerX - this.LeftCornerX) / 2,
-            Math.abs(this.RightCornerY - this.LeftCornerY) / 2
+            (this.rightDownCornerX - this.leftUpCornerX) / 2,
+            (this.rightDownCornerY - this.leftUpCornerY) / 2,
+            Math.abs(this.rightDownCornerX - this.leftUpCornerX) / 2,
+            Math.abs(this.rightDownCornerY - this.leftUpCornerY) / 2
         )
         this.elementGraphics.setStrokeStyle({ width: 2, color: 0xFF0000 });
         this.elementGraphics.stroke();
-        this.setPosition();
+        this.setPositionGraphics();
     }
 }

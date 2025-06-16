@@ -3,7 +3,9 @@ import Element from "./element";
 
 export default class TransformTool {
     toolName = null;
-    changeElement = null;
+
+    editableElement = null;
+
     startPointX = null;
     startPointY = null;
     endPointX = null;
@@ -14,8 +16,9 @@ export default class TransformTool {
 
     startWidth = null;
     startHeight = null;
-    startLCX = null;
-    startLCY = null;
+
+    startLCUX = null;
+    startLCUY = null;
 
     offsetX = 0;
     offsetY = 0;
@@ -25,7 +28,7 @@ export default class TransformTool {
 
     constructor (toolNameString) {
         this.toolName = toolNameString;
-        this.changeElement = new Element(this.toolName);
+        this.editableElement = new Element(this.toolName);
     }
 
     setNewTransform (point, event, selectElement) {
@@ -36,7 +39,7 @@ export default class TransformTool {
                     this.setNewMove(selectElement, event, point);
                     break;
                 case 'scaling':
-                    this.setNewScale(event, point);
+                    this.setNewScale(selectElement, event, point);
                     break;
                 default:
                     console.log("Error: unexistsing tool");
@@ -66,14 +69,18 @@ export default class TransformTool {
         } else {
             this.setMoveType(event);
             this.setStartPoint(PointX, PointY);
-            this.setDiffSPCont(selectElement);
+            this.setOffset(selectElement);
         }
     }
 
-    setNewScale(event, point) {
+    setNewScale(selectElement, event, point) {
         const [PointX, PointY] = this.getPointCoordinates(point);
-        this.setScaleType(event.target.label);
-        this.setStartPoint(PointX, PointY);
+        if (selectElement == null) {
+            this.setStartPoint(PointX, PointY);
+        } else {
+            this.setScaleType(event.target.label);
+            this.setStartPoint(PointX, PointY);
+        }
     }
 
     redrawNewTransform (point, event, selectElement, final) {
@@ -88,7 +95,7 @@ export default class TransformTool {
         }
         if (this.toolName == 'selectTool') {
             if (selectElement instanceof Container && this.allowChange) {
-                [DiffX, DiffY] = this.redrawNewMoveCanvas(point, selectElement);
+                [DiffX, DiffY] = this.redrawCanvasPosition(point, selectElement);
                 [PointX, PointY] = this.getPointCoordinates(point);
                 this.setStartPoint(PointX, PointY);
             } else {
@@ -96,12 +103,12 @@ export default class TransformTool {
                     switch(this.transformType) {
                         case 'moving':
                             [PointX, PointY] = this.getPointCoordinates(point);
-                            this.redrawNewMove(selectElement, PointX, PointY, final);
+                            this.redrawSelectionContainerPosition(selectElement, PointX, PointY, final);
                             break;
                         case 'scaling':
                             [PointX, PointY] = this.getPointCoordinates(point);
                             if (this.scaleType) {
-                                this.redrawNewScaleCanvas(final, point, selectElement);
+                                this.redrawSelectionContainerScale(final, point, selectElement);
                             }
                             break;
                         default:
@@ -160,8 +167,8 @@ export default class TransformTool {
         }
     }
 
-    setDiffSPCont (selectElement) {
-        const [contLeftX, contLeftY] = [selectElement.LeftCornerX, selectElement.LeftCornerY];
+    setOffset (selectElement) {
+        const [contLeftX, contLeftY] = [selectElement.leftUpCornerX, selectElement.leftUpCornerY];
         this.offsetX = this.startPointX - contLeftX;
         this.offsetY = this.startPointY - contLeftY;
     }
@@ -172,86 +179,86 @@ export default class TransformTool {
         return [DiffX, DiffY]
     }
 
-    redrawNewMove(selectedElement, endPointX, endPointY, final) {
+    redrawSelectionContainerPosition(selectedElement, endPointX, endPointY, final) {
         let sideChangeX, sideChangeY
         switch (this.moveType) {
             case 'straight':
                 sideChangeX = endPointX - this.startPointX;
                 sideChangeY = endPointY - this.startPointY;
                 if (sideChangeX > sideChangeY) {
-                    selectedElement.LeftCornerX = (endPointX - this.offsetX);
-                    selectedElement.RightCornerX = (selectedElement.LeftCornerX + selectedElement.containerWidth);
+                    selectedElement.leftUpCornerX = (endPointX - this.offsetX);
+                    selectedElement.rightDownCornerX = (selectedElement.leftUpCornerX + selectedElement.width);
                 } else {
-                    selectedElement.LeftCornerY = (endPointY - this.offsetY);
-                    selectedElement.RightCornerY = (selectedElement.LeftCornerY + selectedElement.containerHeight);
+                    selectedElement.leftUpCornerY = (endPointY - this.offsetY);
+                    selectedElement.rightDownCornerY = (selectedElement.leftUpCornerY + selectedElement.height);
                 }
                 break;
             default:
-                selectedElement.LeftCornerX = (endPointX - this.offsetX);
-                selectedElement.RightCornerX = (selectedElement.LeftCornerX + selectedElement.containerWidth);
-                selectedElement.LeftCornerY = (endPointY - this.offsetY);
-                selectedElement.RightCornerY = (selectedElement.LeftCornerY + selectedElement.containerHeight);
+                selectedElement.leftUpCornerX = (endPointX - this.offsetX);
+                selectedElement.rightDownCornerX = (selectedElement.leftUpCornerX + selectedElement.width);
+                selectedElement.leftUpCornerY = (endPointY - this.offsetY);
+                selectedElement.rightDownCornerY = (selectedElement.leftUpCornerY + selectedElement.height);
                 break;
         }
         const DiffX = endPointX - this.startPointX;
         const DiffY = endPointY - this.startPointY;
-        selectedElement.redrawOuterContainer(final, DiffX, DiffY);
+        selectedElement.setContainerPosition(final, DiffX, DiffY);
     }
 
-    redrawNewMoveCanvas(event, canvasElement) {
+    redrawCanvasPosition(event, canvasElement) {
         const [DiffX, DiffY] = this.getMoveDiff(event);
         const currentPosX = canvasElement.position.x
         const currentPosY = canvasElement.position.y
-        canvasElement.position.set(currentPosX + DiffX * 0.85, currentPosY + DiffY * 0.85);
+        canvasElement.position.set(currentPosX + DiffX * 0.4, currentPosY + DiffY * 0.4);
         return [DiffX, DiffY]
     }
 
-    redrawNewScaleCanvas(final, event, selectElement) {
+    redrawSelectionContainerScale(final, event, selectElement) {
 
         if (!this.startWidth && !this.startHeight) {
-            this.startWidth = selectElement.containerWidth;
-            this.startHeight = selectElement.containerHeight;
+            this.startWidth = selectElement.width;
+            this.startHeight = selectElement.height;
 
-            this.startLCX = selectElement.LeftCornerX;
-            this.startLCY = selectElement.LeftCornerY;
+            this.startLCUX = selectElement.leftUpCornerX;
+            this.startLCUY = selectElement.leftUpCornerY;
         }
 
         const [PointX, PointY] = this.getPointCoordinates(event);
 
         switch (this.scaleType) {
             case 'LeftUp':
-                selectElement.LeftCornerX = PointX;    
-                selectElement.LeftCornerY = PointY;
+                selectElement.leftUpCornerX = PointX;    
+                selectElement.leftUpCornerY = PointY;
                 break;
             case 'LeftDown':
-                selectElement.LeftCornerX = PointX;
-                selectElement.RightCornerY = PointY;
+                selectElement.leftUpCornerX = PointX;
+                selectElement.rightDownCornerY = PointY;
                 break;
             case 'RightDown':
-                selectElement.RightCornerX = PointX;
-                selectElement.RightCornerY = PointY;
+                selectElement.rightDownCornerX = PointX;
+                selectElement.rightDownCornerY = PointY;
                 break;
             case 'RightUp':
-                selectElement.RightCornerX = PointX;
-                selectElement.LeftCornerY = PointY;
+                selectElement.rightDownCornerX = PointX;
+                selectElement.leftUpCornerY = PointY;
                 break;
             default:
                 console.log("Error: scale");
                 break;
         }
 
-        const diffCornerX = selectElement.LeftCornerX - this.startLCX;
-        const diffCornerY = selectElement.LeftCornerY - this.startLCY;
+        const diffCornerX = selectElement.leftUpCornerX - this.startLCUX;
+        const diffCornerY = selectElement.leftUpCornerY - this.startLCUY;
 
-        const newWidthAfterChange = selectElement.RightCornerX - selectElement.LeftCornerX;
-        const newHeightAfterChange = selectElement.RightCornerY - selectElement.LeftCornerY;
+        const newWidthAfterChange = selectElement.rightDownCornerX - selectElement.leftUpCornerX;
+        const newHeightAfterChange = selectElement.rightDownCornerY - selectElement.leftUpCornerY;
         const scaleX = newWidthAfterChange / this.startWidth;
         const scaleY = newHeightAfterChange / this.startHeight;
 
         if (this.scaleType) {
-            selectElement.mainContainer.scale.set(scaleX, scaleY);
+            selectElement.container.scale.set(scaleX, scaleY);
         }
 
-        selectElement.redrawOuterContainerScale(final, scaleX, scaleY, diffCornerX, diffCornerY);
+        selectElement.setContainerScale(final, scaleX, scaleY, diffCornerX, diffCornerY);
     }
 }

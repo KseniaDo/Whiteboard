@@ -193,20 +193,20 @@ function BoardPage() {
 
     function createNewElement(elementData) {
         const newElementClassObject = new Element();
-        newElementClassObject.LeftCornerX = elementData.LeftCornerX;
-        newElementClassObject.LeftCornerY = elementData.LeftCornerY;
-        newElementClassObject.RightCornerX = elementData.RightCornerX;
-        newElementClassObject.RightCornerY = elementData.RightCornerY;
+        newElementClassObject.leftUpCornerX = elementData.leftUpCornerX;
+        newElementClassObject.leftUpCornerY = elementData.leftUpCornerY;
+        newElementClassObject.rightDownCornerX = elementData.rightDownCornerX;
+        newElementClassObject.rightDownCornerY = elementData.rightDownCornerY;
         newElementClassObject.owner = elementData.owner;
-        newElementClassObject.type = elementData.type;
+        newElementClassObject.elementType = elementData.elementType;
         newElementClassObject.selectedColor = elementData.selectedColor;
         newElementClassObject.selectedTextColor = elementData.selectedTextColor;
         newElementClassObject.selectedElement = elementData.selectedElement;
-        newElementClassObject.offsetPenX = elementData.offsetPenX;
-        newElementClassObject.offsetPenY = elementData.offsetPenY;
-        newElementClassObject.textString = elementData.textString;
+        newElementClassObject.initialOffsetX = elementData.initialOffsetX;
+        newElementClassObject.initialOffsetY = elementData.initialOffsetY;
+        newElementClassObject.elementTextString = elementData.elementTextString;
         newElementClassObject.allowText = elementData.allowText;
-        newElementClassObject.pointsPenArray = [...elementData.pointsPenArray];
+        newElementClassObject.pointsArray = [...elementData.pointsArray];
         newElementClassObject.scalePenX = elementData.scalePenX;
         newElementClassObject.scalePenY = elementData.scalePenY;
         newElementClassObject.initialWidth = elementData.initialWidth;
@@ -216,7 +216,7 @@ function BoardPage() {
             newElementClassObject.owner = null;
         }
 
-        if (elementData.type == "text") {
+        if (elementData.elementType == "text") {
             newElementClassObject.elementGraphics = new BitmapText();
         }
 
@@ -296,7 +296,7 @@ function BoardPage() {
     useEffect(() => {
         if (selectElement !== null) {
             if (selectElement.length == 1) {
-                if ((selectElement[0].type == 'text' || selectElement[0].type == 'rect') && textareaEditMode) {
+                if ((selectElement[0].elementType == 'text' || selectElement[0].elementType == 'rect') && textareaEditMode) {
                     handleSetStyleTextChange();
                     setShowTextarea(true);
                     const selectedElementIndex = findGraphicsInArray(stageElements, selectElement[0].elementGraphics);
@@ -356,8 +356,8 @@ function BoardPage() {
             setShowTextarea(false);
             setTextareaEditMode(false);
             const selectedElementIndex = findGraphicsInArray(stageElements, selectElement[0].elementGraphics);
-            selectElement[0].textString = textValue;
-            if (selectElement[0].textString !== '') {
+            selectElement[0].elementTextString = textValue;
+            if (selectElement[0].elementTextString !== '') {
                 selectElement[0].allowText = true;
             } else {
                 selectElement[0].allowText = false;
@@ -494,7 +494,7 @@ function BoardPage() {
     const handleSetStyleTextChange = () => {
         let newTextChangeStyle;
         const globalPoint = selectElement[0].elementGraphics.getGlobalPosition();
-        if (selectElement[0].type == 'rect') {
+        if (selectElement[0].elementType == 'rect') {
             newTextChangeStyle = {
                 backgroundColor: `#${selectElement[0].selectedColor.toString(16).padStart(6, '0').toUpperCase()}`,
                 color: `#${selectElement[0].selectedTextColor.toString(16).padStart(6, '0').toUpperCase()}`,
@@ -503,8 +503,8 @@ function BoardPage() {
                 position: 'absolute',
                 left: `${globalPoint.x + selectElement[0].textMargin * containerScale + canvasLeftCorner.x}px`,
                 top: `${globalPoint.y + selectElement[0].textMargin * containerScale + canvasLeftCorner.y}px`,
-                width: `${(selectElement[0].RightCornerX - selectElement[0].LeftCornerX - 2.5 * selectElement[0].textMargin) * containerScale}px`,
-                height: `${(selectElement[0].RightCornerY - selectElement[0].LeftCornerY - 2.5 * selectElement[0].textMargin) * containerScale}px`,
+                width: `${(selectElement[0].rightDownCornerX - selectElement[0].leftUpCornerX - 2.5 * selectElement[0].textMargin) * containerScale}px`,
+                height: `${(selectElement[0].rightDownCornerY - selectElement[0].leftUpCornerY - 2.5 * selectElement[0].textMargin) * containerScale}px`,
                 fontFamily: 'Arial',
                 fontSize: '24px'
             }
@@ -517,8 +517,8 @@ function BoardPage() {
                 position: 'absolute',
                 left: `${globalPoint.x + canvasLeftCorner.x}px`,
                 top: `${globalPoint.y + canvasLeftCorner.y}px`,
-                width: `${(selectElement[0].RightCornerX - selectElement[0].LeftCornerX) * containerScale}px`,
-                height: `${(selectElement[0].RightCornerY - selectElement[0].LeftCornerY) * containerScale}px`,
+                width: `${(selectElement[0].rightDownCornerX - selectElement[0].leftUpCornerX) * containerScale}px`,
+                height: `${(selectElement[0].rightDownCornerY - selectElement[0].leftUpCornerY) * containerScale}px`,
                 fontFamily: 'Arial',
                 fontSize: '24px'
             }
@@ -549,8 +549,8 @@ function BoardPage() {
 
         function updateStageChild (currentGraphics, deleteMode = false) {
             if (currentGraphics instanceof OuterContainer) {
-                cameraContainer.removeChild(currentGraphics.mainContainer);
-                cameraContainer.addChild(currentGraphics.mainContainer);
+                cameraContainer.removeChild(currentGraphics.container);
+                cameraContainer.addChild(currentGraphics.container);
             } else {
                 if (currentGraphics.elementGraphics !== null) {
                     cameraContainer.removeChild(currentGraphics.elementGraphics);    
@@ -569,11 +569,15 @@ function BoardPage() {
                         selectTool.allowSelection = true;
                         Tools.SELECT.selectProccessing(stageElements[selectedElementIndex], true);
                         stageElements[selectedElementIndex].owner = username;
-                        // здесь - вызов функции с изменением элемента
                         updateElementSocket(stageElements[selectedElementIndex].elementId, stageElements[selectedElementIndex]);
                         outerContainer.addElement(stageElements[selectedElementIndex]);
                         setOuterContainer(outerContainer);
-                        const newSelectElement = [...selectElement, stageElements[selectedElementIndex]];
+                        let newSelectElement;
+                        if (selectElement == null) {
+                            newSelectElement = [stageElements[selectedElementIndex]];
+                        } else {
+                            newSelectElement = [...selectElement, stageElements[selectedElementIndex]];
+                        }
                         setSelectElement(newSelectElement);
                     } else {
                         selectTool.allowSelection = true;
@@ -583,13 +587,11 @@ function BoardPage() {
                                 Tools.SELECT.selectProccessing(selElem, false);
                                 selElem.elementGraphics.label = null;
                                 selElem.owner = null;
-                                // здесь - вызов функции с изменением элемента
                                 updateElementSocket(selElem.elementId, selElem);
                             })
                         }
                         Tools.SELECT.selectProccessing(stageElements[selectedElementIndex], true);
                         stageElements[selectedElementIndex].owner = username;
-                        // здесь - вызов функции с изменением элемента
                         updateElementSocket(stageElements[selectedElementIndex].elementId, stageElements[selectedElementIndex]);
                         newOuterContainer.addElement(stageElements[selectedElementIndex]);
                         setOuterContainer(newOuterContainer);
@@ -614,12 +616,12 @@ function BoardPage() {
         app.then((app) => {
             app.stage.label = "mainStage";
             app.stage.addChild(cameraContainer);
-            if (outerContainer.mainContainer.destroyed) {
-                outerContainer.mainContainer = new Container();
-                outerContainer.mainContainer.sortableChildren = true;
-                outerContainer.mainContainer.label = "outerContainer";
-                outerContainer.calcStroke();
-                outerContainer.calcSquares();
+            if (outerContainer.container.destroyed) {
+                outerContainer.container = new Container();
+                outerContainer.container.sortableChildren = true;
+                outerContainer.container.label = "outerContainer";
+                outerContainer.setStroke();
+                outerContainer.setControls();
                 outerContainer.xCoordinates.clear();
                 outerContainer.yCoordinates.clear();
             }
@@ -630,13 +632,13 @@ function BoardPage() {
                     outerContainer.elementsIds.push(stageElement.elementId);
                 }
             });
-            if (outerContainer.mainContainer.children.length > 5) {
-                outerContainer.mainContainer.interactive = true;
-                outerContainer.mainContainer.eventMode = 'static';
+            if (outerContainer.container.children.length > 5) {
+                outerContainer.container.interactive = true;
+                outerContainer.container.eventMode = 'static';
                 outerContainer.setInteractive();
-                outerContainer.fillOuterElements();
-                outerContainer.mainContainer.on('mousedown', handlerCanvasElementPointerDown);
-                cameraContainer.addChild(outerContainer.mainContainer);
+                outerContainer.fillControlElements();
+                outerContainer.container.on('mousedown', handlerCanvasElementPointerDown);
+                cameraContainer.addChild(outerContainer.container);
             } else {
                 handleColorPicker();
             }
@@ -649,15 +651,15 @@ function BoardPage() {
                 } else {
                     stageElement.redrawGraphics();
                 }
-                if (stageElement.type !== 'text') {
+                if (stageElement.elementType !== 'text') {
                     stageElement.elementGraphics.fill({color: stageElementColor, alpha: 0.5});
                 }
                 stageElement.elementGraphics.interactive = true;
                 if (!stageElement.selectedElement || (stageElement.selectedElement && username !== stageElement.owner)) {
                     stageElement.elementGraphics.on('mousedown', handlerClickElement);
                     stageElement.elementGraphics.eventMode = 'static';
-                    if (stageElement.type == 'pen' || stageElement.type == 'arrow') {
-                        const globalPoint =  new Point(stageElement.LeftCornerX, stageElement.LeftCornerY);
+                    if (stageElement.elementType == 'pen' || stageElement.elementType == 'arrow') {
+                        const globalPoint =  new Point(stageElement.leftUpCornerX, stageElement.leftUpCornerY);
                         const localPoint = stageElement.elementGraphics.toLocal(globalPoint, cameraContainer);
                         stageElement.setHitArea(localPoint);
                     } else {
@@ -665,23 +667,23 @@ function BoardPage() {
                     }
                     cameraContainer.addChild(stageElement.elementGraphics);
 
-                    if (stageElement.type == 'rect' && stageElement.allowText) {
-                        stageElement.setPositionInnerText();
-                        cameraContainer.addChild(stageElement.innerTextGraphics);
+                    if (stageElement.elementType == 'rect' && stageElement.allowText) {
+                        stageElement.setPositionTextGraphics();
+                        cameraContainer.addChild(stageElement.elementTextGraphics);
                     }
                 } else {
                     if (username == stageElement.owner) {
                         if (!showBackgroundColorPicker) {
-                            if (stageElement.type == 'ellipse' || stageElement.type == 'rect' || stageElement.type == 'pen' || stageElement.type == 'arrow') {
+                            if (stageElement.elementType == 'ellipse' || stageElement.elementType == 'rect' || stageElement.elementType == 'pen' || stageElement.elementType == 'arrow') {
                                 setShowBackgroundColorPicker(true);
                             }
                         }
                         if (!showTextColorPicker) {
-                            if (stageElement.type == 'text' || (stageElement.type == 'rect' && stageElement.allowText)) {
+                            if (stageElement.elementType == 'text' || (stageElement.elementType == 'rect' && stageElement.allowText)) {
                                 setShowTextColorPicker(true);
                             }
                         }
-                        stageElement.setPositionAsSelected(outerContainer.LeftCornerX, outerContainer.LeftCornerY);
+                        stageElement.setPositionSelectedElement(outerContainer.leftUpCornerX, outerContainer.leftUpCornerY);
                     }
                 }
             });
@@ -696,12 +698,12 @@ function BoardPage() {
                         outerContainer.removeElement(selElem);
                         deleteElementSocket(selElem.elementId);
                     });
-                    outerContainer.LeftCornerX = null;
-                    outerContainer.LeftCornerY = null;
-                    outerContainer.RightCornerX = null;
-                    outerContainer.RightCornerY = null;
-                    outerContainer.containerWidth = null;
-                    outerContainer.containerHeight = null;
+                    outerContainer.leftUpCornerX = null;
+                    outerContainer.leftUpCornerY = null;
+                    outerContainer.rightDownCornerX = null;
+                    outerContainer.rightDownCornerY = null;
+                    outerContainer.width = null;
+                    outerContainer.height = null;
                     handleSetStageElements(newGraphicsArray);
                     setSelectElement(null);
                     setSelectTool(PossibleTools[1]);
@@ -709,8 +711,8 @@ function BoardPage() {
                 setSelectTool(PossibleTools[1]);
             } else {
                 cameraContainer.scale.set(containerScale, containerScale);
-                cameraContainer.position.x = containerPosition.x - (containerScale - 1) * width;
-                cameraContainer.position.y = containerPosition.y - (containerScale - 1) * height;
+                cameraContainer.position.x = containerPosition.x;
+                cameraContainer.position.y = containerPosition.y;
                 app.stage.hitArea = app.screen;
                 selectTool.scaleCanvas = containerScale;
             }
@@ -733,7 +735,6 @@ function BoardPage() {
                             Tools.SELECT.selectProccessing(selElem, false);
                             selElem.elementGraphics.label = null;
                             selElem.owner = null;
-                            // здесь - вызов функции с изменением элемента
                             updateElementSocket(selElem.elementId, selElem);
                         })
                         const newOuterContainer = new OuterContainer();
@@ -746,13 +747,18 @@ function BoardPage() {
                         selectTool.startProccessing(event, GraphicsColor);
                     }
                     selectTool.mouseDown = true;
-                    const newSelectElement = [selectTool.tool.changeElement];
+                    const newSelectElement = [selectTool.toolObject.editableElement];
                     setSelectElement(newSelectElement);
                 } else {
+                    setGlobalToLocal(event);
+                    selectTool.startProccessing(event);
                     if (selectTool.allowSelection) {
                         selectTool.allowSelection = false;
                     } else {
                         selectTool.mouseDown = true;
+                    }
+                    if (selectTool.toolObject.allowChange) {
+                        selectTool.toolObject.allowChange = false;
                     }
                 }   
             }
@@ -785,7 +791,7 @@ function BoardPage() {
                 if (selectTool.mouseDown == true) {
                     setGlobalToLocal(event);
                     selectTool.redrawProccessing(event, selectElement[0]);
-                    const newGraphics = selectTool.tool.changeElement;
+                    const newGraphics = selectTool.toolObject.editableElement;
                     updateStageChild(newGraphics);
                 }
             } else {
@@ -795,8 +801,8 @@ function BoardPage() {
                         selectTool.redrawProccessing(event, cameraContainer);
                     }
                 } else {
-                    if ((selectTool.mouseDown == true) && (outerContainer.mainContainer.children.length > 5)) {
-                        if (selectElement !== null) {
+                    if ((selectTool.mouseDown == true) && (outerContainer.container.children.length > 5)) {
+                        if (selectElement !== null && (selectTool.toolObject.moveType !== null || selectTool.toolObject.scaleType !== null)) {
                             setGlobalToLocal(event);
                             selectTool.redrawProccessing(event, outerContainer);
                         }
@@ -828,6 +834,10 @@ function BoardPage() {
                         addElementSocket(selectElement[0]);
                     }
 
+                    if (selectTool.toolName == 'rectTool') {
+                        selectElement[0].selectedTextColor = GraphicsTextColor;
+                    }
+
                     setOuterContainer(newOuterContainer);
 
                     selectElement.forEach((selElem) => {
@@ -846,7 +856,7 @@ function BoardPage() {
             } else {
                 if ((selectTool.toolName == 'selectTool') && (event.button == 0)) {
                     if (selectTool.mouseDown == true) {
-                        if (!selectTool.tool.allowChange) {
+                        if (!selectTool.toolObject.allowChange) {
                             selectTool.mouseDown = false;
                             if (event.target.label == "mainStage") {
                                 if (selectElement !== null) {
@@ -864,13 +874,13 @@ function BoardPage() {
                             }
                             if (selectElement !== null) {
                                 if (selectTool.allowSelection !== true) {
-                                    if (selectElement.length == 1 && selectElement[0].type == 'text' && event.target.label == 'selectedElement') {
-                                        setTextValue(selectElement[0].textString);
+                                    if (selectElement.length == 1 && selectElement[0].elementType == 'text' && event.target.label == 'selectedElement') {
+                                        setTextValue(selectElement[0].elementTextString);
                                         setTextareaEditMode(true);
                                         return;
                                     }
-                                    if (selectElement.length == 1 && selectElement[0].type == 'rect' && event.target.label == 'selectedElement') {
-                                        setTextValue(selectElement[0].textString);
+                                    if (selectElement.length == 1 && selectElement[0].elementType == 'rect' && event.target.label == 'selectedElement') {
+                                        setTextValue(selectElement[0].elementTextString);
                                         setTextareaEditMode(true);
                                         return;
                                     }
@@ -921,96 +931,104 @@ function BoardPage() {
                                 }
                             }
                         }
-                        if (selectElement !== null && selectTool.tool.allowChange) {
-                            selectTool.tool.allowChange = false;
+                        if (selectElement !== null && selectTool.toolObject.allowChange) {
+                            selectTool.toolObject.allowChange = false;
                             selectTool.mouseDown = false;
                             setGlobalToLocal(event);
                             selectTool.redrawProccessing(event, outerContainer, true);
                             let newGraphicsArray = [];
                             let selectedElementIndex;
-                            if (outerContainer.lastMoveDiffX && outerContainer.lastMoveDiffY && selectTool.tool.transformType == 'moving') {
+                            if (outerContainer.lastCornerChangeX && outerContainer.lastCornerChangeY && selectTool.toolObject.transformType == 'moving') {
                                 selectElement.forEach((selElem) => {
-                                    selElem.LeftCornerX += outerContainer.lastMoveDiffX;
-                                    selElem.LeftCornerY += outerContainer.lastMoveDiffY;
-                                    selElem.RightCornerX += outerContainer.lastMoveDiffX;
-                                    selElem.RightCornerY += outerContainer.lastMoveDiffY;
+                                    selElem.leftUpCornerX += outerContainer.lastCornerChangeX;
+                                    selElem.leftUpCornerY += outerContainer.lastCornerChangeY;
+                                    selElem.rightDownCornerX += outerContainer.lastCornerChangeX;
+                                    selElem.rightDownCornerY += outerContainer.lastCornerChangeY;
                                     selectedElementIndex = findGraphicsInArray(stageElements, selElem.elementGraphics);
                                     newGraphicsArray = getNewGraphicsArray('update', selElem, selectedElementIndex);
                                     updateElementSocket(selElem.elementId, selElem);
                                 })
-                                outerContainer.lastMoveDiffX = null;
-                                outerContainer.lastMoveDiffY = null;
+                                outerContainer.lastCornerChangeX = null;
+                                outerContainer.lastCornerChangeY = null;
+                                handleSetStageElements(newGraphicsArray);
+                                selectTool.toolObject.transformType = null;
+                                selectTool.toolObject.scaleType = null;
+                                selectTool.toolObject.moveType = null;
+                                return;
                             }
-                            if (outerContainer.lastScaleX && outerContainer.lastScaleY && selectTool.tool.transformType == 'scaling') {
+                            if (outerContainer.lastScaleX && outerContainer.lastScaleY && selectTool.toolObject.transformType == 'scaling') {
                                 outerContainer.xCoordinates.clear();
                                 outerContainer.yCoordinates.clear();
                                 selectElement.forEach((selElem) => {
-                                    let oldHeight = selElem.RightCornerY - selElem.LeftCornerY;
-                                    let oldWidth = selElem.RightCornerX - selElem.LeftCornerX;
-                                    let percentX = ((selElem.LeftCornerX - (outerContainer.LeftCornerX - outerContainer.lastMoveDiffX)) / selectTool.tool.startWidth).toFixed(2);
-                                    let percentY = ((selElem.LeftCornerY - (outerContainer.LeftCornerY - outerContainer.lastMoveDiffY)) / selectTool.tool.startHeight).toFixed(2);
-                                    selElem.LeftCornerX = outerContainer.LeftCornerX + percentX * outerContainer.containerWidth;
-                                    selElem.LeftCornerY = outerContainer.LeftCornerY + percentY * outerContainer.containerHeight;
-                                    selElem.RightCornerX = selElem.LeftCornerX + oldWidth * outerContainer.lastScaleX;
-                                    selElem.RightCornerY = selElem.LeftCornerY + oldHeight * outerContainer.lastScaleY;
-                                    if (selElem.type == 'pen' || selElem.type == 'arrow') {
-                                        if (selElem.LeftCornerX > selElem.RightCornerX) {
+                                    let oldHeight = selElem.rightDownCornerY - selElem.leftUpCornerY;
+                                    let oldWidth = selElem.rightDownCornerX - selElem.leftUpCornerX;
+                                    let percentX = ((selElem.leftUpCornerX - (outerContainer.leftUpCornerX - outerContainer.lastCornerChangeX)) / selectTool.toolObject.startWidth).toFixed(2);
+                                    let percentY = ((selElem.leftUpCornerY - (outerContainer.leftUpCornerY - outerContainer.lastCornerChangeY)) / selectTool.toolObject.startHeight).toFixed(2);
+                                    selElem.leftUpCornerX = outerContainer.leftUpCornerX + percentX * outerContainer.width;
+                                    selElem.leftUpCornerY = outerContainer.leftUpCornerY + percentY * outerContainer.height;
+                                    selElem.rightDownCornerX = selElem.leftUpCornerX + oldWidth * outerContainer.lastScaleX;
+                                    selElem.rightDownCornerY = selElem.leftUpCornerY + oldHeight * outerContainer.lastScaleY;
+                                    if (selElem.elementType == 'pen' || selElem.elementType == 'arrow') {
+                                        if (selElem.leftUpCornerX > selElem.rightDownCornerX) {
                                             if (selElem.scalePenX < 0) {
-                                                selElem.scalePenX = (Math.abs(selElem.RightCornerX - selElem.LeftCornerX) /selElem.initialWidth).toFixed(2);
+                                                selElem.scalePenX = (Math.abs(selElem.rightDownCornerX - selElem.leftUpCornerX) /selElem.initialWidth).toFixed(2);
                                             } else {
-                                                selElem.scalePenX = - (Math.abs(selElem.RightCornerX - selElem.LeftCornerX) /selElem.initialWidth).toFixed(2);
+                                                selElem.scalePenX = - (Math.abs(selElem.rightDownCornerX - selElem.leftUpCornerX) /selElem.initialWidth).toFixed(2);
                                             }
                                         } else {
                                             if (selElem.scalePenX < 0) {
-                                                selElem.scalePenX = - (Math.abs(selElem.RightCornerX - selElem.LeftCornerX) /selElem.initialWidth).toFixed(2);
+                                                selElem.scalePenX = - (Math.abs(selElem.rightDownCornerX - selElem.leftUpCornerX) /selElem.initialWidth).toFixed(2);
                                             } else {
-                                                selElem.scalePenX = (Math.abs(selElem.RightCornerX - selElem.LeftCornerX) /selElem.initialWidth).toFixed(2);
+                                                selElem.scalePenX = (Math.abs(selElem.rightDownCornerX - selElem.leftUpCornerX) /selElem.initialWidth).toFixed(2);
                                             }
                                         }
-                                        if (selElem.LeftCornerY > selElem.RightCornerY) {
+                                        if (selElem.leftUpCornerY > selElem.rightDownCornerY) {
                                             if (selElem.scalePenY < 0) {
-                                                selElem.scalePenY = (Math.abs(selElem.RightCornerY - selElem.LeftCornerY) /selElem.initialHeight).toFixed(2);
+                                                selElem.scalePenY = (Math.abs(selElem.rightDownCornerY - selElem.leftUpCornerY) /selElem.initialHeight).toFixed(2);
                                             } else {
-                                                selElem.scalePenY = - (Math.abs(selElem.RightCornerY - selElem.LeftCornerY) /selElem.initialHeight).toFixed(2);
+                                                selElem.scalePenY = - (Math.abs(selElem.rightDownCornerY - selElem.leftUpCornerY) /selElem.initialHeight).toFixed(2);
                                             }
                                         } else {
                                             if (selElem.scalePenY < 0) {
-                                                selElem.scalePenY = - (Math.abs(selElem.RightCornerY - selElem.LeftCornerY) /selElem.initialHeight).toFixed(2);
+                                                selElem.scalePenY = - (Math.abs(selElem.rightDownCornerY - selElem.leftUpCornerY) /selElem.initialHeight).toFixed(2);
                                             } else {
-                                                selElem.scalePenY = (Math.abs(selElem.RightCornerY - selElem.LeftCornerY) /selElem.initialHeight).toFixed(2);
+                                                selElem.scalePenY = (Math.abs(selElem.rightDownCornerY - selElem.leftUpCornerY) /selElem.initialHeight).toFixed(2);
                                             }
                                         }
                                     }
 
                                     let varForChangeOne;
-                                    if (selElem.LeftCornerX > selElem.RightCornerX) {
-                                        varForChangeOne = selElem.RightCornerX;
-                                        selElem.RightCornerX = selElem.LeftCornerX;
-                                        selElem.LeftCornerX = varForChangeOne;
+                                    if (selElem.leftUpCornerX > selElem.rightDownCornerX) {
+                                        varForChangeOne = selElem.rightDownCornerX;
+                                        selElem.rightDownCornerX = selElem.leftUpCornerX;
+                                        selElem.leftUpCornerX = varForChangeOne;
                                     }
 
-                                    if (selElem.LeftCornerY > selElem.RightCornerY) {
-                                        varForChangeOne = selElem.RightCornerY;
-                                        selElem.RightCornerY = selElem.LeftCornerY;
-                                        selElem.LeftCornerY = varForChangeOne;
+                                    if (selElem.leftUpCornerY > selElem.rightDownCornerY) {
+                                        varForChangeOne = selElem.rightDownCornerY;
+                                        selElem.rightDownCornerY = selElem.leftUpCornerY;
+                                        selElem.leftUpCornerY = varForChangeOne;
                                     }
-                                    outerContainer.addElementCoordinates(selElem.LeftCornerX, selElem.LeftCornerY);
-                                    outerContainer.addElementCoordinates(selElem.RightCornerX, selElem.RightCornerY);
+                                    outerContainer.addCoordinates(selElem.leftUpCornerX, selElem.leftUpCornerY);
+                                    outerContainer.addCoordinates(selElem.rightDownCornerX, selElem.rightDownCornerY);
                                     selectedElementIndex = findGraphicsInArray(stageElements, selElem.elementGraphics);
                                     newGraphicsArray = getNewGraphicsArray('update', selElem, selectedElementIndex);
                                     updateElementSocket(selElem.elementId, selElem);
                                 })
-                                selectTool.tool.startHeight = null;
-                                selectTool.tool.startWidth = null;
-                                outerContainer.setNewCornersAddElement();
+                                selectTool.toolObject.startHeight = null;
+                                selectTool.toolObject.startWidth = null;
+                                outerContainer.setNewCorners();
                                 outerContainer.lastScaleX = null;
                                 outerContainer.lastScaleY = null;
-                                outerContainer.lastMoveDiffX = null;
-                                outerContainer.lastMoveDiffY = null;
-                                outerContainer.mainContainer.scale.set(1, 1);
-                                outerContainer.setElementsScales(1, 1);
+                                outerContainer.lastCornerChangeX = null;
+                                outerContainer.lastCornerChangeY = null;
+                                outerContainer.container.scale.set(1, 1);
+                                outerContainer.setChildElementsScale(1, 1);
+                                handleSetStageElements(newGraphicsArray);
                             }
-                            handleSetStageElements(newGraphicsArray);
+                            selectTool.toolObject.transformType = null;
+                            selectTool.toolObject.scaleType = null;
+                            selectTool.toolObject.moveType = null;
                         }
                     }
                 }
@@ -1048,8 +1066,8 @@ function BoardPage() {
             stageElements.forEach((stageElement) => {
                 stageElement.elementGraphics.off('mousedown', handlerClickElement);
             });
-            outerContainer.mainContainer.off('mousedown', handlerCanvasElementPointerDown);
-            outerContainer.mainContainer.destroy();
+            outerContainer.container.off('mousedown', handlerCanvasElementPointerDown);
+            outerContainer.container.destroy();
             (await app).stage.off('mousedown', handleMouseDown);
             (await app).stage.off('mousemove', handleMouseMove);
             (await app).stage.off('mouseup', handleMouseUp);
@@ -1063,7 +1081,7 @@ function BoardPage() {
     return (
         <>
             <HeaderControlPanel onClick={handleClickControlPanel}/>
-            <ToolsPanel onClick={handleClickTools} selectedTool={selectTool.toolName}/>
+            <ToolsPanel onClick={handleClickTools} selectedTool={selectTool.toolName} showTextarea={showTextarea}/>
             {showBackgroundColorPicker && <div><div className='board-color-title-bckg-up'><p className='board-color-title-up'>цвет объекта</p></div><div className='board-color board-color_up'>
                 <HexColorPicker color={color} onChange={(color) => handleSetColor(color)} />
             </div></div>}

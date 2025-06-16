@@ -15,7 +15,7 @@ const User = require('./models/User');
 const Element = require('./models/Element');
 
 app.use(cors({
-    origin: 'http://localhost:3001',
+    origin: process.env.FRONTEND,
     methods: ["GET", "POST"],
     credentials: true,
 }));
@@ -23,7 +23,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:3001',
+        origin: process.env.FRONTEND,
         methods: ["GET", "POST"],
         credentials: true,
     },
@@ -36,9 +36,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/board', boardRoutes);
 
 
-mongoose.connect('mongodb://username:password@digboard-mongo:27017/boarddb?authSource=admin')
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
-    server.listen(3000, () => {
+    server.listen(process.env.BACKEND, () => {
         console.log('server is running');
     });
 })
@@ -47,7 +47,7 @@ mongoose.connect('mongodb://username:password@digboard-mongo:27017/boarddb?authS
 io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error('No token found'));
-    jwt.verify(token, "secret", (err, decoded) => {
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if (err) return next(new Error('Invalid token'));
         socket.user = decoded;
         next();

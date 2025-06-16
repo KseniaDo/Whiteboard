@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './ToolsPanel.css'
 
-function ToolsPanel({ onClick, selectedTool }) {
+function ToolsPanel({ onClick, selectedTool, showTextarea }) {
     const [ hideTools, setHideTools ] = useState(null);
     const [ activeToolId, setActiveToolId ] = useState(selectedTool);
 
@@ -44,7 +44,7 @@ function ToolsPanel({ onClick, selectedTool }) {
         const handleKeyDown = (event) => {
             const pressedKey = event.key.toLowerCase();
             const toolElement = Tools.find(element => element.keyValue == pressedKey);
-            if (toolElement) {
+            if (toolElement && !showTextarea) {
                 setActiveToolId(toolElement.toolName);
                 onClick(toolElement.toolName);
             }
@@ -55,7 +55,7 @@ function ToolsPanel({ onClick, selectedTool }) {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);
+    }, [showTextarea]);
 
     return (
         <>

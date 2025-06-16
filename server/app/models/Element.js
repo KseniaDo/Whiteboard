@@ -1,22 +1,22 @@
 const mongoose = require('mongoose');
 
 const elementSchema = new mongoose.Schema({
-    LeftCornerX: {
+    leftUpCornerX: {
         type: String,
     },
-    LeftCornerY: {
+    leftUpCornerY: {
         type: String,
     },
-    RightCornerX: {
+    rightDownCornerX: {
         type: String,
     },
-    RightCornerY: {
+    rightDownCornerY: {
         type: String,
     },
     owner: {
         type: String,
     },
-    type: {
+    elementType: {
         type: String,
     },
     selectedColor: {
@@ -28,19 +28,19 @@ const elementSchema = new mongoose.Schema({
     selectedElement: {
         type: String,
     },
-    offsetPenX: {
+    initialOffsetX: {
         type: String,
     },
-    offsetPenY: {
+    initialOffsetY: {
         type: String,
     },
-    textString: {
+    elementTextString: {
         type: String,
     },
     allowText: {
         type: String,
     },
-    pointsPenArray: {
+    pointsArray: {
         type: String,
     },
     scalePenX: {

@@ -5,7 +5,7 @@ exports.authenticate = (req, res, next) => {
 
     if (!JWTtoken) return res.status(401).json({ error: 'Доступ запрещен '});
 
-    JWT.verify(JWTtoken, "secret", (err, decoded) => {
+    JWT.verify(JWTtoken, process.env.SECRET_KEY, (err, decoded) => {
         if (err) return res.status(403).json({ error: 'Недействительный токен' });
         req.userId = decoded.userId;
         req.userRole = decoded.role;

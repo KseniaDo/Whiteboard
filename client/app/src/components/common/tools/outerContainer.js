@@ -2,36 +2,34 @@ import { BitmapText, Container, Graphics, Rectangle } from 'pixi.js';
 import BinSearchTree from './binSearchTree';
 
 export default class OuterContainer {
-    LeftCornerX = null;
-    LeftCornerY = null;
-    RightCornerX = null;
-    RightCornerY = null;
-    containerWidth = null;
-    containerHeight = null;
+    leftUpCornerX = null;
+    leftUpCornerY = null;
+    rightDownCornerX = null;
+    rightDownCornerY = null;
+    width = null;
+    height = null;
     elementsIds = [];
     owner = null;
     type = null;
-    mainContainer = new Container();
+    container = new Container();
     containerOffset = 64;
-    strokeGraphicsRect = new Graphics();
+    containerStroke = new Graphics();
     controlLeftUp = new Graphics();
     controlLeftDown = new Graphics();
     controlRightUp = new Graphics();
     controlRightDown = new Graphics();
-    controlArrowsWidthRect = 12;
-    controlArrowsHeightRect = 8;
     xCoordinates = new BinSearchTree();
     yCoordinates = new BinSearchTree();
-    lastMoveDiffX = null;
-    lastMoveDiffY = null;
+    lastCornerChangeX = null;
+    lastCornerChangeY = null;
 
     constructor () {
-        this.calcSquares();
-        this.mainContainer.sortableChildren = true;
-        this.mainContainer.label = "outerContainer";
+        this.setControls();
+        this.container.sortableChildren = true;
+        this.container.label = "outerContainer";
     }
 
-    calcSquares () {
+    setControls () {
         if (this.controlLeftUp.destroyed) {
             this.controlLeftUp = new Graphics();
         }
@@ -56,18 +54,18 @@ export default class OuterContainer {
         this.controlRightDown.rect(this.containerOffset / 2 - 4, this.containerOffset / 2 - 4, 8, 8);
         this.controlRightDown.zIndex = 2;
         this.controlRightDown.label = "RightUp";
-        this.strokeGraphicsRect.zIndex = 2;
+        this.containerStroke.zIndex = 2;
     }
 
-    calcStroke () {
-        if (this.strokeGraphicsRect.destroyed) {
-            this.strokeGraphicsRect = new Graphics();
+    setStroke () {
+        if (this.containerStroke.destroyed) {
+            this.containerStroke = new Graphics();
         } else {
-            this.strokeGraphicsRect.clear();
+            this.containerStroke.clear();
         }
-        const strokeWidth = Math.abs(this.RightCornerX - this.LeftCornerX);
-        const strokeHeight = Math.abs(this.RightCornerY - this.LeftCornerY);
-        this.strokeGraphicsRect.rect(
+        const strokeWidth = Math.abs(this.rightDownCornerX - this.leftUpCornerX);
+        const strokeHeight = Math.abs(this.rightDownCornerY - this.leftUpCornerY);
+        this.containerStroke.rect(
             this.containerOffset / 2,
             this.containerOffset / 2,
             strokeWidth,
@@ -75,241 +73,241 @@ export default class OuterContainer {
         )
     }
 
-    addElementCoordinates (elementCoordinateX, elementCoordinateY) {
+    addCoordinates (elementCoordinateX, elementCoordinateY) {
         this.xCoordinates.insertCoordinate(elementCoordinateX);
         this.yCoordinates.insertCoordinate(elementCoordinateY);
     }
 
-    setNewCornersAddElement () {
+    setNewCorners () {
         const [minValX, maxValX] = this.xCoordinates.getNewCorners();
         const [minValY, maxValY] = this.yCoordinates.getNewCorners();
 
-        this.LeftCornerX = minValX;
-        this.LeftCornerY = minValY;
+        this.leftUpCornerX = minValX;
+        this.leftUpCornerY = minValY;
 
-        this.RightCornerX = maxValX;
-        this.RightCornerY = maxValY;
+        this.rightDownCornerX = maxValX;
+        this.rightDownCornerY = maxValY;
 
-        this.containerWidth = this.RightCornerX - this.LeftCornerX;
-        this.containerHeight = this.RightCornerY - this.LeftCornerY;
+        this.width = this.rightDownCornerX - this.leftUpCornerX;
+        this.height = this.rightDownCornerY - this.leftUpCornerY;
 
         this.setPositionsControl();
     }
     
     addElement (stageElement) {
-        this.mainContainer.removeChild(this.strokeGraphicsRect, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
+        this.container.removeChild(this.containerStroke, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
 
-        let oldCornerX = this.LeftCornerX;
-        let oldCornerY = this.LeftCornerY;
+        let oldCornerX = this.leftUpCornerX;
+        let oldCornerY = this.leftUpCornerY;
 
-        if (this.LeftCornerX == null) {
-            this.LeftCornerX = stageElement.LeftCornerX;
-            this.LeftCornerY = stageElement.LeftCornerY;
-            this.RightCornerX = stageElement.RightCornerX;
-            this.RightCornerY = stageElement.RightCornerY;
+        if (this.leftUpCornerX == null) {
+            this.leftUpCornerX = stageElement.leftUpCornerX;
+            this.leftUpCornerY = stageElement.leftUpCornerY;
+            this.rightDownCornerX = stageElement.rightDownCornerX;
+            this.rightDownCornerY = stageElement.rightDownCornerY;
         } else {
-            this.LeftCornerX = (stageElement.LeftCornerX < this.LeftCornerX) ? stageElement.LeftCornerX : this.LeftCornerX;
-            this.LeftCornerY = (stageElement.LeftCornerY < this.LeftCornerY) ? stageElement.LeftCornerY : this.LeftCornerY;
-            this.RightCornerX = (stageElement.RightCornerX > this.RightCornerX) ? stageElement.RightCornerX : this.RightCornerX;
-            this.RightCornerY = (stageElement.RightCornerY > this.RightCornerY) ? stageElement.RightCornerY : this.RightCornerY;
+            this.leftUpCornerX = (stageElement.leftUpCornerX < this.leftUpCornerX) ? stageElement.leftUpCornerX : this.leftUpCornerX;
+            this.leftUpCornerY = (stageElement.leftUpCornerY < this.leftUpCornerY) ? stageElement.leftUpCornerY : this.leftUpCornerY;
+            this.rightDownCornerX = (stageElement.rightDownCornerX > this.rightDownCornerX) ? stageElement.rightDownCornerX : this.rightDownCornerX;
+            this.rightDownCornerY = (stageElement.rightDownCornerY > this.rightDownCornerY) ? stageElement.rightDownCornerY : this.rightDownCornerY;
         }
 
-        this.mainContainer.children.forEach((child) => {
-            child.position.x += oldCornerX - this.LeftCornerX;
-            child.position.y += oldCornerY - this.LeftCornerY;
+        this.container.children.forEach((child) => {
+            child.position.x += oldCornerX - this.leftUpCornerX;
+            child.position.y += oldCornerY - this.leftUpCornerY;
         })
 
-        this.xCoordinates.insertCoordinate(stageElement.LeftCornerX);
-        this.xCoordinates.insertCoordinate(stageElement.RightCornerX);
-        this.yCoordinates.insertCoordinate(stageElement.LeftCornerY);
-        this.yCoordinates.insertCoordinate(stageElement.RightCornerY);
+        this.xCoordinates.insertCoordinate(stageElement.leftUpCornerX);
+        this.xCoordinates.insertCoordinate(stageElement.rightDownCornerX);
+        this.yCoordinates.insertCoordinate(stageElement.leftUpCornerY);
+        this.yCoordinates.insertCoordinate(stageElement.rightDownCornerY);
 
-        this.containerWidth = this.RightCornerX - this.LeftCornerX;
-        this.containerHeight = this.RightCornerY - this.LeftCornerY;
+        this.width = this.rightDownCornerX - this.leftUpCornerX;
+        this.height = this.rightDownCornerY - this.leftUpCornerY;
 
-        this.calcStroke();
+        this.setStroke();
         stageElement.elementGraphics.label = "selectedElement";
         stageElement.elementGraphics.zIndex = 1;
-        this.mainContainer.addChild(stageElement.elementGraphics);
-        if (stageElement.type == 'rect' && stageElement.allowText) {
-            stageElement.setPositionInnerText(this.LeftCornerX, this.LeftCornerY);
-            stageElement.innerTextGraphics.zIndex = 2;
-            stageElement.innerTextGraphics.text = stageElement.textString;
-            stageElement.innerTextGraphics.style = {
+        this.container.addChild(stageElement.elementGraphics);
+        if (stageElement.elementType == 'rect' && stageElement.allowText) {
+            stageElement.setPositionTextGraphics(this.leftUpCornerX, this.leftUpCornerY);
+            stageElement.elementTextGraphics.zIndex = 2;
+            stageElement.elementTextGraphics.text = stageElement.elementTextString;
+            stageElement.elementTextGraphics.style = {
                 fontFamily: 'Arial',
                 fontSize: 24,
                 fill: 0xFF0000,
                 wordWrap: true,
-                wordWrapWidth: stageElement.RightCornerX - stageElement.LeftCornerX - stageElement.textMargin,
+                wordWrapWidth: stageElement.rightDownCornerX - stageElement.leftUpCornerX - stageElement.textMargin,
                 align: 'left',
             }
-            this.mainContainer.addChild(stageElement.innerTextGraphics);
+            this.container.addChild(stageElement.elementTextGraphics);
         }
 
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.controlLeftDown, - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightUp, this.containerWidth - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightDown, this.containerWidth - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.strokeGraphicsRect, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.mainContainer.addChild(this.strokeGraphicsRect, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.controlLeftDown, - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightUp, this.width - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightDown, this.width - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.containerStroke, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.container.addChild(this.containerStroke, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
 
-        this.mainContainer.interactive = true;
-        this.mainContainer.position.x = this.LeftCornerX;
-        this.mainContainer.position.y = this.LeftCornerY;
+        this.container.interactive = true;
+        this.container.position.x = this.leftUpCornerX;
+        this.container.position.y = this.leftUpCornerY;
     }
 
     removeElement (stageElement) {
-        this.mainContainer.removeChild(stageElement);
+        this.container.removeChild(stageElement);
     }
 
     removeCoordinates (selectedElement) {
-        this.mainContainer.removeChild(this.strokeGraphicsRect, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
+        this.container.removeChild(this.containerStroke, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
 
-        this.xCoordinates.deleteCoordinate(selectedElement.LeftCornerX);
-        this.xCoordinates.deleteCoordinate(selectedElement.RightCornerX);
+        this.xCoordinates.deleteCoordinate(selectedElement.leftUpCornerX);
+        this.xCoordinates.deleteCoordinate(selectedElement.rightDownCornerX);
 
-        this.yCoordinates.deleteCoordinate(selectedElement.LeftCornerY);
-        this.yCoordinates.deleteCoordinate(selectedElement.RightCornerY);
+        this.yCoordinates.deleteCoordinate(selectedElement.leftUpCornerY);
+        this.yCoordinates.deleteCoordinate(selectedElement.rightDownCornerY);
 
-        let oldCornerX = this.LeftCornerX;
-        let oldCornerY = this.LeftCornerY;
+        let oldCornerX = this.leftUpCornerX;
+        let oldCornerY = this.leftUpCornerY;
 
         const [minValX, maxValX] = this.xCoordinates.getNewCorners();
         const [minValY, maxValY] = this.yCoordinates.getNewCorners();
 
-        this.LeftCornerX = minValX;
-        this.LeftCornerY = minValY;
-        this.RightCornerX = maxValX;
-        this.RightCornerY = maxValY;
+        this.leftUpCornerX = minValX;
+        this.leftUpCornerY = minValY;
+        this.rightDownCornerX = maxValX;
+        this.rightDownCornerY = maxValY;
 
-        this.mainContainer.children.forEach((child) => {
-            child.position.x += oldCornerX - this.LeftCornerX;
-            child.position.y += oldCornerY - this.LeftCornerY;
+        this.container.children.forEach((child) => {
+            child.position.x += oldCornerX - this.leftUpCornerX;
+            child.position.y += oldCornerY - this.leftUpCornerY;
         })
 
-        this.containerWidth = this.RightCornerX - this.LeftCornerX;
-        this.containerHeight = this.RightCornerY - this.LeftCornerY;
+        this.width = this.rightDownCornerX - this.leftUpCornerX;
+        this.height = this.rightDownCornerY - this.leftUpCornerY;
 
-        this.calcStroke();
+        this.setStroke();
 
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.controlLeftDown, - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightUp, this.containerWidth - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightDown, this.containerWidth - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.strokeGraphicsRect, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.mainContainer.addChild(this.strokeGraphicsRect, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.controlLeftDown, - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightUp, this.width - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightDown, this.width - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.containerStroke, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.container.addChild(this.containerStroke, this.controlLeftUp, this.controlLeftDown, this.controlRightUp, this.controlRightDown);
 
-        this.mainContainer.interactive = true;
-        this.mainContainer.position.x = this.LeftCornerX;
-        this.mainContainer.position.y = this.LeftCornerY;
+        this.container.interactive = true;
+        this.container.position.x = this.leftUpCornerX;
+        this.container.position.y = this.leftUpCornerY;
     }
 
-    fillOuterElements () {
+    fillControlElements () {
         this.controlLeftUp.fill({color: 0x93D2FF});
         this.controlLeftDown.fill({color: 0x93D2FF});
         this.controlRightUp.fill({color: 0x93D2FF});
         this.controlRightDown.fill({color: 0x93D2FF});
 
-        this.mainContainer.children.forEach((child) => {
+        this.container.children.forEach((child) => {
             if (!(child instanceof BitmapText)) {
                 child.stroke({ width: 2, color: 0x0095FF });
             }
         })
     }
 
-    redrawOuterContainer(final, DiffX, DiffY) {
+    setContainerPosition (final, DiffX, DiffY) {
         if (final) {
             this.xCoordinates.addDiffToVal(DiffX);
             this.yCoordinates.addDiffToVal(DiffY);
-            this.lastMoveDiffX = DiffX;
-            this.lastMoveDiffY = DiffY;
+            this.lastCornerChangeX = DiffX;
+            this.lastCornerChangeY = DiffY;
         }
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.controlLeftDown, - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightUp, this.containerWidth - this.containerOffset / 2, this.containerHeight - this.containerOffset / 2);
-        this.setPositions(this.controlRightDown, this.containerWidth - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.strokeGraphicsRect, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.mainContainer.position.x = this.LeftCornerX;
-        this.mainContainer.position.y = this.LeftCornerY;
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.controlLeftDown, - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightUp, this.width - this.containerOffset / 2, this.height - this.containerOffset / 2);
+        this.setControlPositions(this.controlRightDown, this.width - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.containerStroke, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.container.position.x = this.leftUpCornerX;
+        this.container.position.y = this.leftUpCornerY;
     }
 
-    redrawOuterContainerScale(final, ScaleX, ScaleY, diffCornerX, diffCornerY) {
-        this.containerWidth = this.RightCornerX - this.LeftCornerX;
-        this.containerHeight = this.RightCornerY - this.LeftCornerY;
+    setContainerScale (final, ScaleX, ScaleY, diffCornerX, diffCornerY) {
+        this.width = this.rightDownCornerX - this.leftUpCornerX;
+        this.height = this.rightDownCornerY - this.leftUpCornerY;
 
         if (final) {
             this.lastScaleX = ScaleX;
             this.lastScaleY = ScaleY;
-            this.lastMoveDiffX = diffCornerX;
-            this.lastMoveDiffY = diffCornerY;
+            this.lastCornerChangeX = diffCornerX;
+            this.lastCornerChangeY = diffCornerY;
         }
 
         let containerControlScaleX = ScaleX;
         let containerControlScaleY = ScaleY;
 
-        this.calcStroke();
-        this.strokeGraphicsRect.stroke({ width: 2, color: 0x0095FF });
+        this.setStroke();
+        this.containerStroke.stroke({ width: 2, color: 0x0095FF });
         [
             this.controlLeftUp, 
             this.controlLeftDown, 
             this.controlRightUp, 
             this.controlRightDown
         ].forEach((element) => {
-            this.setScale(element, containerControlScaleX, containerControlScaleY);
+            this.setControlScale(element, containerControlScaleX, containerControlScaleY);
         })
 
-        if (this.LeftCornerX > this.RightCornerX) {
+        if (this.leftUpCornerX > this.rightDownCornerX) {
             containerControlScaleX = - ScaleX;
         }
-        if (this.LeftCornerY > this.RightCornerY) {
+        if (this.leftUpCornerY > this.rightDownCornerY) {
             containerControlScaleY = - ScaleY;
         }
-        this.setScale(this.strokeGraphicsRect, containerControlScaleX, containerControlScaleY);
+        this.setControlScale(this.containerStroke, containerControlScaleX, containerControlScaleY);
 
-        if ((this.LeftCornerX > this.RightCornerX) || (this.LeftCornerY > this.RightCornerY)) {
-            this.setPositions(this.strokeGraphicsRect, (- this.containerOffset / 2) / containerControlScaleX, (- this.containerOffset / 2) / containerControlScaleY);
+        if ((this.leftUpCornerX > this.rightDownCornerX) || (this.leftUpCornerY > this.rightDownCornerY)) {
+            this.setControlPositions(this.containerStroke, (- this.containerOffset / 2) / containerControlScaleX, (- this.containerOffset / 2) / containerControlScaleY);
         } else {
-            this.setPositions(this.strokeGraphicsRect, (- this.containerOffset / 2) / ScaleX, (- this.containerOffset / 2) / ScaleY);
+            this.setControlPositions(this.containerStroke, (- this.containerOffset / 2) / ScaleX, (- this.containerOffset / 2) / ScaleY);
         }
 
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2 / ScaleX, - this.containerOffset / 2 / ScaleY);
-        this.setPositions(this.controlLeftDown, (- this.containerOffset / 2) / ScaleX, (this.containerHeight - this.containerOffset / 2) / ScaleY);
-        this.setPositions(this.controlRightUp, (this.containerWidth - this.containerOffset / 2) / ScaleX, (this.containerHeight - this.containerOffset / 2) / ScaleY);
-        this.setPositions(this.controlRightDown, (this.containerWidth - this.containerOffset / 2) / ScaleX, (- this.containerOffset / 2) / ScaleY);
-        this.mainContainer.position.x = this.LeftCornerX;
-        this.mainContainer.position.y = this.LeftCornerY;
-        this.mainContainer.hitArea = new Rectangle(-4, -4, this.containerWidth + 8, this.containerHeight + 8);
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2 / ScaleX, - this.containerOffset / 2 / ScaleY);
+        this.setControlPositions(this.controlLeftDown, (- this.containerOffset / 2) / ScaleX, (this.height - this.containerOffset / 2) / ScaleY);
+        this.setControlPositions(this.controlRightUp, (this.width - this.containerOffset / 2) / ScaleX, (this.height - this.containerOffset / 2) / ScaleY);
+        this.setControlPositions(this.controlRightDown, (this.width - this.containerOffset / 2) / ScaleX, (- this.containerOffset / 2) / ScaleY);
+        this.container.position.x = this.leftUpCornerX;
+        this.container.position.y = this.leftUpCornerY;
+        this.container.hitArea = new Rectangle(-4, -4, this.width + 8, this.height + 8);
     }
 
     setPositionsControl () {
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
-        this.setPositions(this.controlLeftDown, (- this.containerOffset / 2), (this.containerHeight - this.containerOffset / 2));
-        this.setPositions(this.controlRightUp, (this.containerWidth - this.containerOffset / 2), (this.containerHeight - this.containerOffset / 2));
-        this.setPositions(this.controlRightDown, (this.containerWidth - this.containerOffset / 2), (- this.containerOffset / 2));
-        this.setPositions(this.strokeGraphicsRect, (- this.containerOffset / 2), (- this.containerOffset / 2));
-        this.mainContainer.position.x = this.LeftCornerX;
-        this.mainContainer.position.y = this.LeftCornerY;
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2, - this.containerOffset / 2);
+        this.setControlPositions(this.controlLeftDown, (- this.containerOffset / 2), (this.height - this.containerOffset / 2));
+        this.setControlPositions(this.controlRightUp, (this.width - this.containerOffset / 2), (this.height - this.containerOffset / 2));
+        this.setControlPositions(this.controlRightDown, (this.width - this.containerOffset / 2), (- this.containerOffset / 2));
+        this.setControlPositions(this.containerStroke, (- this.containerOffset / 2), (- this.containerOffset / 2));
+        this.container.position.x = this.leftUpCornerX;
+        this.container.position.y = this.leftUpCornerY;
     }
 
-    setElementsScales (scaleX, scaleY) {
-        this.calcStroke();
-        this.strokeGraphicsRect.stroke({ width: 2, color: 0x0095FF });
+    setChildElementsScale (scaleX, scaleY) {
+        this.setStroke();
+        this.containerStroke.stroke({ width: 2, color: 0x0095FF });
 
         [
             this.controlLeftUp, 
             this.controlLeftDown, 
             this.controlRightUp, 
             this.controlRightDown,
-            this.strokeGraphicsRect
+            this.containerStroke
         ].forEach((element) => {
-            this.setScale(element, scaleX, scaleY);
+            this.setControlScale(element, scaleX, scaleY);
         })
 
-        this.setPositions(this.controlLeftUp, - this.containerOffset / 2 / scaleX, - this.containerOffset / 2 / scaleY);
-        this.setPositions(this.controlLeftDown, (- this.containerOffset / 2) / scaleX, (this.containerHeight - this.containerOffset / 2) / scaleY);
-        this.setPositions(this.controlRightUp, (this.containerWidth - this.containerOffset / 2) / scaleX, (this.containerHeight - this.containerOffset / 2) / scaleY);
-        this.setPositions(this.controlRightDown, (this.containerWidth - this.containerOffset / 2) / scaleX, (- this.containerOffset / 2) / scaleY);
-        this.setPositions(this.strokeGraphicsRect, (- this.containerOffset / 2) / scaleX, (- this.containerOffset / 2) / scaleY);
+        this.setControlPositions(this.controlLeftUp, - this.containerOffset / 2 / scaleX, - this.containerOffset / 2 / scaleY);
+        this.setControlPositions(this.controlLeftDown, (- this.containerOffset / 2) / scaleX, (this.height - this.containerOffset / 2) / scaleY);
+        this.setControlPositions(this.controlRightUp, (this.width - this.containerOffset / 2) / scaleX, (this.height - this.containerOffset / 2) / scaleY);
+        this.setControlPositions(this.controlRightDown, (this.width - this.containerOffset / 2) / scaleX, (- this.containerOffset / 2) / scaleY);
+        this.setControlPositions(this.containerStroke, (- this.containerOffset / 2) / scaleX, (- this.containerOffset / 2) / scaleY);
     }
 
 
@@ -319,15 +317,15 @@ export default class OuterContainer {
         this.controlRightUp.interactive = true;
         this.controlRightDown.interactive = true;
 
-        this.mainContainer.hitArea = new Rectangle(-4, -4, this.containerWidth + 8, this.containerHeight + 8);
+        this.container.hitArea = new Rectangle(-4, -4, this.width + 8, this.height + 8);
     }
 
-    setPositions (element, coorX, coorY) {
+    setControlPositions (element, coorX, coorY) {
         element.position.x = coorX;
         element.position.y = coorY;
     }
 
-    setScale (element, scaleX, scaleY) {
+    setControlScale (element, scaleX, scaleY) {
         element.scale.set(1 / scaleX, 1 / scaleY);
     }
 }

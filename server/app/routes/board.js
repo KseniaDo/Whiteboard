@@ -8,7 +8,7 @@ const router = express.Router();
 const checkAuth = (req, res, next) => {
     const token = req.cookies.jwt;
 
-    jwt.verify(token, "secret", (err, decoded) => {
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
         if (err) return res.status(401).json({ error: 'Пользователь неавторизован' });
 
         req.userId = decoded.userId;
